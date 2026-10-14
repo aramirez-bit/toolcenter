@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Addi ToolCenter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ===== Paleta oficial Addi — recursos.addi.com/marca-addi ===== */
+  :root{
+    --azul:#1C67D8;          /* PANTONE 286 C — color principal dominante */
+    --azul-hover:#1554B8;
+    --azul-deep:#0F4497;
+    --teal:#86FEF5;          /* PANTONE 318 C */
+    --naranja:#FF8F43;       /* PANTONE 2025 C */
+    --gris:#E6E6E6;          /* PANTONE COOL GRAY 1 C */
+    --negro:#111111;         /* PANTONE BLACK 3 C */
+    --blanco:#FFFFFF;
+    --fondo:#F4F7FC;
+    --r-xl:28px; --r-lg:20px; --r-md:14px; --r-full:999px;
+    --sombra:0 10px 30px rgba(17,17,17,.08);
+    --sombra-hover:0 16px 40px rgba(28,103,216,.18);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--fondo);min-height:100vh;color:var(--negro);}
+  ::selection{background:var(--teal);color:var(--negro);}
+
+  .app{display:flex;gap:18px;padding:14px;max-width:1760px;margin:0 auto;min-height:100vh;}
+
+  /* ============ SIDEBAR — Azul Addi dominante ============ */
+  .sidebar{width:264px;min-width:264px;background:var(--azul);border-radius:var(--r-xl);padding:22px 14px 18px;display:flex;flex-direction:column;gap:8px;height:calc(100vh - 28px);position:sticky;top:14px;overflow-y:auto;overflow-x:hidden;}
+  .sidebar::-webkit-scrollbar{width:5px;}
+  .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:99px;}
+
+  .logo-box{display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0 22px;}
+  .logo-box img{width:118px;height:auto;filter:brightness(0) invert(1);} /* logo blanco sobre Azul Addi (uso permitido por marca) */
+  .logo-fallback{display:none;color:#fff;font-size:42px;font-weight:800;letter-spacing:-2px;}
+  .logo-sub{color:var(--teal);font-weight:600;font-size:13px;letter-spacing:5px;text-transform:uppercase;}
+
+  .side-title{color:rgba(255,255,255,.65);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:2px;padding:6px 12px 8px;}
+
+  .team{border-radius:var(--r-lg);overflow:hidden;transition:background .25s;}
+  .team-btn{width:100%;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.12);border:none;cursor:pointer;padding:13px 16px;font-size:15px;font-weight:600;color:#fff;border-radius:var(--r-lg);transition:all .22s cubic-bezier(.34,1.4,.64,1);font-family:'Outfit',sans-serif;}
+  .team-btn:hover{background:rgba(255,255,255,.24);transform:translateX(3px);}
+  .team-btn:active{transform:scale(.98);}
+  .team.open .team-btn{background:var(--blanco);color:var(--azul);border-radius:var(--r-lg) var(--r-lg) 0 0;transform:none;}
+  .team-btn .chev{transition:transform .3s cubic-bezier(.34,1.4,.64,1);font-size:11px;opacity:.8;}
+  .team.open .chev{transform:rotate(180deg);}
+  .team-options{max-height:0;overflow:hidden;transition:max-height .38s cubic-bezier(.4,0,.2,1);background:var(--azul-deep);border-radius:0 0 var(--r-lg) var(--r-lg);}
+  .team.open .team-options{max-height:360px;}
+  .opt{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.78);font-size:13.5px;font-weight:400;padding:10px 16px;transition:all .18s;font-family:'Outfit',sans-serif;}
+  .opt::before{content:"";width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35);flex:none;transition:all .2s;}
+  .opt:hover{color:#fff;background:rgba(255,255,255,.08);padding-left:20px;}
+  .opt:hover::before{background:var(--naranja);}
+  .opt.active{color:var(--teal);font-weight:600;background:rgba(134,254,245,.1);}
+  .opt.active::before{background:var(--teal);box-shadow:0 0 8px var(--teal);}
+
+  /* ============ MAIN ============ */
+  .main{flex:1;display:flex;flex-direction:column;gap:16px;min-width:0;padding-top:2px;}
+
+  /* Buscador */
+  .searchwrap{position:relative;max-width:480px;}
+  .searchbar{display:flex;align-items:center;gap:8px;background:var(--blanco);border-radius:var(--r-full);padding:4px 4px 4px 16px;box-shadow:var(--sombra);border:2px solid transparent;transition:border-color .25s, box-shadow .25s;}
+  .searchbar:focus-within{border-color:var(--azul);box-shadow:var(--sombra-hover);}
+  .searchbar input{flex:1;border:none;outline:none;font-size:13.5px;background:transparent;color:var(--negro);font-family:'Outfit',sans-serif;}
+  .searchbar input::placeholder{color:#9aa6b8;}
+  .search-btn{width:32px;height:32px;border-radius:50%;background:var(--azul);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s, background .2s;flex:none;}
+  .search-btn:hover{background:var(--azul-hover);transform:scale(1.08);}
+  .search-btn svg{width:14px;height:14px;}
+  .search-drop{position:absolute;top:calc(100% + 8px);left:0;right:0;background:#fff;border-radius:var(--r-lg);box-shadow:0 20px 50px rgba(17,17,17,.2);z-index:50;overflow:hidden;display:none;animation:pop .25s cubic-bezier(.34,1.4,.64,1);}
+  @keyframes pop{from{opacity:0;transform:translateY(-8px) scale(.98);}to{opacity:1;transform:none;}}
+  .search-drop button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:12px 20px;border:none;background:none;cursor:pointer;font-size:14px;font-family:'Outfit',sans-serif;transition:background .15s;}
+  .search-drop button:hover{background:var(--fondo);padding-left:26px;}
+  .search-drop .sd-team{color:var(--azul);font-weight:700;}
+  .search-drop .sd-dot{width:8px;height:8px;border-radius:50%;background:var(--naranja);flex:none;}
+
+  /* ============ GALERÍA — hero Azul Addi ============ */
+  .gallery{background:var(--azul);border-radius:var(--r-xl);overflow:hidden;position:relative;min-height:420px;display:flex;flex-direction:column;box-shadow:var(--sombra);}
+  /* círculos decorativos — motivo circular del logo Addi */
+  .gallery::before{content:"";position:absolute;width:340px;height:340px;border-radius:50%;background:var(--azul-hover);top:-140px;right:-100px;transition:transform .6s;}
+  .gallery::after{content:"";position:absolute;width:120px;height:120px;border-radius:50%;background:var(--teal);opacity:.9;bottom:-48px;right:120px;transition:transform .6s;}
+  .gallery:hover::before{transform:scale(1.06);}
+  .gallery:hover::after{transform:translateY(-8px);}
+  .g-dot-naranja{position:absolute;width:46px;height:46px;border-radius:50%;background:var(--naranja);top:42px;right:200px;z-index:1;animation:float 5s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+
+  .slides-viewport{flex:1;position:relative;overflow:hidden;z-index:2;}
+  .slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:52px 200px 52px 56px;opacity:0;transform:translateX(60px);transition:opacity .5s, transform .5s cubic-bezier(.4,0,.2,1);pointer-events:none;}
+  .slide.active{opacity:1;transform:none;pointer-events:auto;}
+  .slide.exit-left{opacity:0;transform:translateX(-60px);}
+  .slide .tag{display:inline-flex;align-items:center;gap:7px;width:fit-content;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:7px 16px;border-radius:var(--r-full);margin-bottom:16px;}
+  .tag.teal{background:var(--teal);color:var(--negro);}
+  .tag.naranja{background:var(--naranja);color:var(--negro);}
+  .tag.blanco{background:var(--blanco);color:var(--azul);}
+  .slide h2{font-size:30px;font-weight:800;color:#fff;margin-bottom:12px;line-height:1.2;letter-spacing:-.5px;max-width:640px;}
+  .slide p{font-size:15.5px;color:rgba(255,255,255,.85);max-width:600px;line-height:1.6;font-weight:300;}
+  .slide .fecha{margin-top:18px;font-size:12px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:2px;}
+  /* Imagen de la noticia: ocupa más espacio y se funde con el fondo azul */
+  .slide-img{position:absolute;right:0;top:50%;transform:translateY(-50%);width:640px;max-height:100%;object-fit:cover;z-index:1;filter:saturate(1.08);
+    -webkit-mask-image:radial-gradient(ellipse 68% 68% at center, black 46%, transparent 92%);
+    mask-image:radial-gradient(ellipse 68% 68% at center, black 46%, transparent 92%);
+    transition:transform .6s;}
+  .slide:hover .slide-img{transform:translateY(-50%) scale(1.03);}
+  .slide.with-img{padding-right:640px;}
+  .slide.with-img::before{content:"";position:absolute;right:-80px;top:50%;transform:translateY(-50%);width:520px;height:520px;border-radius:50%;background:radial-gradient(circle, rgba(28,103,216,0) 0%, var(--azul) 72%);z-index:1;pointer-events:none;}
+  .slide.with-img~.g-dot-naranja{display:none;}
+
+  .gal-nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px 18px;z-index:2;position:relative;}
+  .gal-arrows{display:flex;gap:10px;}
+  .gal-arrow{background:rgba(255,255,255,.16);border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+  .gal-arrow:hover{background:var(--blanco);transform:scale(1.1);}
+  .gal-arrow:hover svg path{stroke:var(--azul);}
+  .gal-arrow:active{transform:scale(.95);}
+  .dots{display:flex;gap:9px;align-items:center;}
+  .dot{width:10px;height:10px;border-radius:var(--r-full);border:none;background:rgba(255,255,255,.4);cursor:pointer;padding:0;transition:all .3s;}
+  .dot.active{background:var(--teal);width:30px;}
+  .progress{position:absolute;bottom:0;left:0;height:4px;background:var(--teal);width:0%;z-index:3;border-radius:0 4px 4px 0;}
+  .progress.run{animation:barra 6s linear forwards;}
+  @keyframes barra{from{width:0}to{width:100%}}
+
+  /* Pill de selección */
+  .selection-pill{display:inline-flex;align-items:center;gap:10px;background:var(--blanco);border-radius:var(--r-full);padding:10px 24px;width:fit-content;font-size:15px;font-weight:600;box-shadow:var(--sombra);animation:pop .3s;}
+  .selection-pill .p-dot{width:10px;height:10px;border-radius:50%;background:var(--naranja);}
+  .selection-pill b{color:var(--azul);font-weight:700;}
+
+  /* ============ TARJETAS ============ */
+  .panel{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .card{background:var(--blanco);border-radius:var(--r-xl);padding:18px;min-height:310px;display:flex;flex-direction:column;box-shadow:var(--sombra);transition:transform .25s, box-shadow .25s;position:relative;overflow:hidden;}
+  .card:hover{transform:translateY(-6px);box-shadow:var(--sombra-hover);}
+  .card::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;}
+  .card.c-operativa::before{background:var(--azul);}
+  .card.c-material::before{background:var(--naranja);}
+  .card.c-bases::before{background:var(--teal);}
+  .card-header{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;padding:8px 4px 14px;letter-spacing:-.3px;}
+  .card-header .ico{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;}
+  .c-operativa .ico{background:var(--azul);}
+  .c-material .ico{background:var(--naranja);}
+  .c-bases .ico{background:var(--teal);}
+  .c-bases .ico svg path{stroke:var(--negro);}
+  .card ul{list-style:none;display:flex;flex-direction:column;gap:9px;overflow-y:auto;flex:1;}
+  .card li{background:var(--fondo);border-radius:var(--r-md);padding:11px 14px;font-size:13.5px;color:#3a4150;line-height:1.5;border:1.5px solid transparent;transition:all .2s;opacity:0;animation:itemIn .4s forwards;}
+  @keyframes itemIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  .card li:hover{border-color:var(--azul);background:#fff;transform:translateX(4px);}
+  .c-material li:hover{border-color:var(--naranja);}
+  .c-bases li:hover{border-color:var(--teal);}
+  .card li b{color:var(--negro);font-weight:600;}
+  /* Ítem desplegable: título corto -> clic -> detalle en la misma tarjeta */
+  .card li.colapsable{padding:0;}
+  .item-titulo{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;background:none;border:none;cursor:pointer;padding:11px 14px;font-size:13.5px;font-weight:600;color:var(--azul);text-align:left;font-family:'Outfit',sans-serif;}
+  .item-titulo .ichev{transition:transform .25s;font-size:11px;color:#9aa6b8;flex:none;}
+  li.abierto .item-titulo .ichev{transform:rotate(180deg);}
+  .item-detalle{max-height:0;overflow:hidden;transition:max-height .3s ease, padding .3s ease;padding:0 14px;font-size:13px;line-height:1.55;color:#3a4150;}
+  li.abierto .item-detalle{max-height:420px;padding:0 14px 12px;}
+  .card a{color:var(--azul);font-weight:600;text-decoration:none;display:flex;align-items:center;gap:9px;word-break:break-word;}
+  .card a .arrow{transition:transform .2s;display:inline-block;margin-left:auto;}
+  .card li:hover a .arrow{transform:translateX(4px);}
+  /* Favicon del servicio linkeado (Sheets, Asana, Slack...) con respaldo de letra */
+  .fav{width:20px;height:20px;border-radius:5px;flex:none;object-fit:contain;}
+  .fav-letter{width:20px;height:20px;border-radius:5px;background:var(--azul);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none;}
+  .empty{color:#9aa6b8;font-size:13px;text-align:center;padding:24px 8px;font-style:italic;}
+
+  footer{text-align:center;font-size:12px;color:#9aa6b8;padding:8px 0 14px;font-weight:300;}
+  footer b{color:var(--azul);font-weight:600;}
+
+  @media(max-width:1020px){
+    .app{flex-direction:column;}
+    .sidebar{width:100%;min-width:0;height:auto;position:static;}
+    .panel{grid-template-columns:1fr;}
+    .slide{padding:32px 28px;}
+    .g-dot-naranja{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar">
+    <div class="logo-box">
+      <img src="https://recursos.addi.com/assets/Addi-logo.svg" alt="Addi"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+      <div class="logo-fallback">Addi</div>
+      <div class="logo-sub">ToolCenter</div>
+    </div>
+    <div class="side-title">Equipos</div>
+    <div id="teams"></div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <main class="main">
+
+    <div class="searchwrap">
+      <div class="searchbar">
+        <input id="search" type="text" placeholder="Buscar equipo o tema... (ej: escalamientos, fraude, tipificaciones)" autocomplete="off">
+        <button class="search-btn" aria-label="Buscar">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" stroke="#fff" stroke-width="2.2"/><path d="M15.5 15.5L21 21" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="search-drop" id="searchDrop"></div>
+    </div>
+
+    <section class="gallery" id="gallery">
+      <div class="g-dot-naranja"></div>
+      <div class="slides-viewport" id="slides"></div>
+      <div class="gal-nav">
+        <div class="dots" id="dots"></div>
+        <div class="gal-arrows">
+          <button class="gal-arrow" id="prevBtn" aria-label="Anterior"><svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="gal-arrow" id="nextBtn" aria-label="Siguiente"><svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </section>
+
+    <div class="selection-pill" id="selectionPill"><span class="p-dot"></span>Selecciona un equipo y un tema</div>
+
+    <section class="panel">
+      <div class="card c-operativa">
+        <div class="card-header"><span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></span>Documentación</div>
+        <ul id="colDocumentación"></ul>
+      </div>
+      <div class="card c-material">
+        <div class="card-header"><span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 19V5a2 2 0 012-2h13v18H6a2 2 0 01-2-2zm0 0a2 2 0 012-2h13" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Material</div>
+        <ul id="colMaterial"></ul>
+      </div>
+      <div class="card c-bases">
+        <div class="card-header"><span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 14a5 5 0 007.07 0l2.12-2.12a5 5 0 00-7.07-7.07L11 5.93M14 10a5 5 0 00-7.07 0l-2.12 2.12a5 5 0 007.07 7.07L13 18.07" stroke="#111" stroke-width="2" stroke-linecap="round"/></svg></span>Bases y accesos</div>
+        <ul id="colBases"></ul>
+      </div>
+    </section>
+
+    <footer><b>Addi ToolCenter</b> · Información interna de equipos CX · <span id="fuente">Contenido local</span></footer>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   CONEXIÓN CON GOOGLE SHEETS
+   Pega entre las comillas de SHEET_ID el ID de la hoja de Google
+   (la parte de la URL entre /d/ y /edit).
+   Requisito: la hoja debe estar compartida como
+   "Cualquier persona con el enlace: Lector".
+   Si SHEET_ID está vacío o la hoja no responde, la página usa
+   el contenido embebido de la ZONA EDITABLE de más abajo.
+   ============================================================ */
+const CONFIG = {
+  SHEET_ID: "1jG5OS2CryB08nrV7BpieaE2ey3DYBuLMILbnUbOfV74",
+  TAB_CONTENIDO: "Contenido",
+  TAB_NOTICIAS: "Noticias"
+};
+
+/* ============================================================
+   ZONA EDITABLE — TODA la información de la página vive aquí.
+   Para actualizar contenido solo se edita este bloque DATA.
+   Estructura por equipo:
+     nombre  -> nombre visible del equipo
+     noticias-> slides de la galería (tag: 'teal' | 'naranja' | 'blanco')
+     temas   -> opciones del dropdown. Cada tema tiene:
+                operativa[], material[], bases[]. Un item puede ser:
+                texto plano | D("Titulo","Detalle desplegable") | HTML con <a>
+   ============================================================ */
+const L = (t,u)=>({t,u});
+const D = (t,d)=>({t,d}); // item desplegable: titulo corto + detalle que se abre en la tarjeta
+
+let DATA = {
+  "soporte-clientes":{
+    nombre:"Soporte clientes",
+    noticias:[{tag:"blanco",titulo:"Nueva política de reembolsos vigente",desc:"Desde el 1 de agosto aplica el flujo actualizado de reembolsos. Revisa el paso a paso en la casilla Documentación antes de gestionar casos.",fecha:"03 · Ago · 2026",imagen:"img/bienvenida-addi.png"},{tag:"teal",titulo:"Mejora en tiempos de respuesta",desc:"El equipo alcanzó un SLA del 95% este mes. Sigue las buenas prácticas del manual para mantener el indicador.",fecha:"28 · Jul · 2026"},{tag:"naranja",titulo:"Recordatorio: verificación de identidad",desc:"Todo caso de cliente debe validar identidad con los 3 datos obligatorios antes de entregar información de cuenta.",fecha:"21 · Jul · 2026"}],
+    temas:{
+      "Equipo y cultura":{operativa:[D("Quiénes somos","Empresa de tecnología que impulsa y habilita el comercio digital en Latinoamérica. Queremos que compres lo que quieras, cuando quieras: fácil, rápido y transparente."),D("Estructura CX","Ricardo López (Head CX) · Luis Felipe Rodríguez (Manager CX) · Diana Fuentes (Internal Ops).<br><br>Células: Emtelco N1, N2 Clientes, Soporte Aliados, Actualización de datos, Marketplace, PQRS y Social Media."),D("Internal Ops","<b>Training:</b> Ana Cortés, Dalia Forero, Fabian Ramírez, Angie Buitrago.<br><b>QA:</b> Nathalia Ortega, Carolina Pallares, Ángela Benavides, Alejandro Puentes, Mateo Puentes, Cristian Ávila (IA Expert).")],material:[D("Nuestros valores","Somos dueños y actuamos como tal · Logramos lo imposible · Nos obsesionamos y perfeccionamos nuestro craft · Comenzamos desde y con el cliente · Tenemos razón con frecuencia · Actuamos con integridad · Estamos ahí para apoyarnos mutuamente · Decimos “lo siento”."),"<a href=\"img/organigrama-cx.png\" target=\"_blank\">📊 Organigrama — Operaciones CX</a>","<a href=\"img/organigrama-internal-ops.png\" target=\"_blank\">📊 Organigrama — Internal Ops</a>"],bases:[L("Presentación Welcome to Addi N1 (Canva) — pendiente pegar link","#")]},
+      "Cuenta y datos":{operativa:["Consulta el proceso oficial en <b>Bases y accesos</b>. Los resúmenes operativos de este tema se irán agregando progresivamente."],material:[],bases:[L("Solicitud de documentos","https://app.notion.com/36feace5de2b814da482ef2027922515"),L("Contraseña de la app","https://app.notion.com/36feace5de2b8197997bdbb116d5acdf"),L("Actualización de datos","https://app.notion.com/36deace5de2b8138b077d4bddfa63f47"),L("Cancelación y gestión de cuenta/cupo","https://app.notion.com/36deace5de2b812a9706e083598ae34e")]},
+      "Compras y crédito":{operativa:["Consulta el proceso oficial en <b>Bases y accesos</b>. Los resúmenes operativos de este tema se irán agregando progresivamente."],material:[],bases:[L("Proceso de compra","https://app.notion.com/36deace5de2b816d94eec8a8bfac4d26"),L("Proceso de compra — Prospecto","https://app.notion.com/3bceace5de2b81268657ee392a4407d4"),L("Rechazo del crédito","https://app.notion.com/36deace5de2b8136be43f45acbfbe321"),L("Detalles del crédito","https://app.notion.com/36deace5de2b814790d6c2b1cdff82ef"),L("AddiCupo","https://app.notion.com/36deace5de2b8187b958e6b1d7b3b02d"),L("Compras con intereses","https://app.notion.com/36feace5de2b81b7bd67fe07d16cb7d6"),L("Composición de cuota y cascada de pagos","https://app.notion.com/3abeace5de2b8184bf30d7483d617ab8"),L("Campañas e incentivos","https://app.notion.com/36deace5de2b8117a514d11ebb4fb1ca"),L("Battlepass — Sticky Fingers (campaña)","https://app.notion.com/3abeace5de2b81b9ab89fcea19a9b8fd")]},
+      "Pagos y cobranzas":{operativa:["Consulta el proceso oficial en <b>Bases y accesos</b>. Los resúmenes operativos de este tema se irán agregando progresivamente."],material:[],bases:[L("Cobranzas","https://app.notion.com/36feace5de2b81c4bc1ac4ae105ca449"),L("Generación de PIN de pago","https://app.notion.com/36deace5de2b8111b700fe0b1be9a492"),L("Novedades con pagos","https://app.notion.com/36deace5de2b815ca49de4873fff6c17"),L("Pagos dirigidos","https://app.notion.com/3abeace5de2b813281a8f1a30d79c37e"),L("Cuotas y saldos por pagar","https://app.notion.com/3abeace5de2b81c18169f838f9a5b82e"),L("Mora incorrecta o cuota ya pagada","https://app.notion.com/36deace5de2b810ea4dac6cd555389f7"),L("Saldo pendiente o cuota que no cierra","https://app.notion.com/36deace5de2b81f8a5c9fe2ebab7484b"),L("Condonaciones","https://app.notion.com/36deace5de2b8187b5a7f9703863f5ef"),L("DRUO — Débito automático","https://app.notion.com/36deace5de2b81eb9542eb1f33e68d07")]},
+      "Reclamaciones y reembolsos":{operativa:["Consulta el proceso oficial en <b>Bases y accesos</b>. Los resúmenes operativos de este tema se irán agregando progresivamente."],material:[],bases:[L("Reembolsos y devoluciones","https://app.notion.com/36deace5de2b8154b01cfd1be9b70ef9"),L("Respaldos y garantías — Servicio de fianza","https://app.notion.com/36feace5de2b8110a2f3d1b409612ac0"),L("Novedad FGA o FNG — Cesión de crédito","https://app.notion.com/36deace5de2b816b8474d3ce77343717")]},
+      "Fraude y seguridad":{operativa:["Consulta el proceso oficial en <b>Bases y accesos</b>. Los resúmenes operativos de este tema se irán agregando progresivamente."],material:[],bases:[L("Prevención de fraude","https://app.notion.com/36deace5de2b8144a052d0f34f548446"),L("Fraude y suplantación de identidad","https://app.notion.com/36deace5de2b814485b5c2a717fd4360"),L("Bloqueo y desbloqueo — Listas restrictivas","https://app.notion.com/36deace5de2b816e9c25ea602adcf471"),L("Consulta de caso de fraude escalado","https://app.notion.com/36deace5de2b818e9eedd49844d11f83"),L("Comunicaciones","https://app.notion.com/36deace5de2b81628459fe193598eb2f")]},
+      "Escalamientos y transferencias":{operativa:["Consulta el proceso oficial en <b>Bases y accesos</b>. Los resúmenes operativos de este tema se irán agregando progresivamente."],material:[],bases:[L("Escalamiento inicial al aliado","https://app.notion.com/356eace5de2b8110b927e9f81898201d"),L("Transferencia a Aliados","https://app.notion.com/3b3eace5de2b81aea651c3c387594caa"),L("Transferencia a MarketPlace","https://app.notion.com/3bbeace5de2b81ec850cde4b0063e798"),L("Novedades en plataformas","https://app.notion.com/36deace5de2b81bca2ebf35e80f703c0"),L("Sin conversación y sin requerimiento","https://app.notion.com/36deace5de2b816d8015c9303ba4c2f2")]},
+      "PQRS y centrales de riesgo":{operativa:["Consulta el proceso oficial en <b>Bases y accesos</b>. Los resúmenes operativos de este tema se irán agregando progresivamente."],material:[],bases:[L("PQRS","https://app.notion.com/36deace5de2b81c18c48d20093d17c20"),L("Reporte en centrales de riesgo","https://app.notion.com/3aeeace5de2b8113ad86dddac93aa466")]}
+    }
+  },
+  "soporte-aliados":{
+    nombre:"Soporte aliados",
+    noticias:[{tag:"blanco",titulo:"Actualización del portal de aliados",desc:"El portal de aliados tiene nueva sección de liquidaciones. Revisa el instructivo en Material antes de guiar a un aliado.",fecha:"01 · Ago · 2026"},{tag:"naranja",titulo:"Cambio en flujo de facturación",desc:"Los casos de facturación de aliados ahora se tipifican bajo la nueva categoría. Verifica la matriz actualizada.",fecha:"25 · Jul · 2026"},{tag:"teal",titulo:"Nuevo curso en Training Center",desc:"Ya está disponible el curso de refuerzo sobre gestión de aliados. Inscríbete desde el link en Bases y accesos.",fecha:"18 · Jul · 2026"}],
+    temas:{
+      "Prospectos aliados":{operativa:["<b>Paso 1:</b> Valida identidad del aliado (NIT + datos de contacto registrados).","<b>Paso 2:</b> Identifica el tipo de solicitud: pagos, liquidación, técnico o comercial.","<b>Paso 3:</b> Gestiona según flujo o escala al área correspondiente."],material:["<a href=\"#\" target=\"_blank\">🎓 Presentación Onboarding Aliados (Canva) — pendiente pegar link</a>","<a href=\"#\" target=\"_blank\">🖼️ Antigüedad y verticales — pendiente subir JPG a Drive y pegar link</a>"],bases:[L("Notion — Proceso de aliados (pendiente pegar link)","#"),L("Portal de aliados","https://ejemplo.com")]},
+      "Tipificaciones":{operativa:["Tipifica bajo el árbol exclusivo de aliados, no el de clientes.","Facturación y liquidación son categorías separadas desde julio 2026."],material:["Catálogo de tipificaciones aliados","Casos ejemplo tipificados"],bases:[L("Matriz de tipificación aliados","https://ejemplo.com")]},
+      "Escalamientos":{operativa:["Casos técnicos del portal: escalar a Soporte Técnico con evidencia (pantallazo + NIT).","Casos de pagos no reflejados: escalar a Conciliaciones.","SLA de respuesta de áreas internas: 24h hábiles."],material:["Matriz de escalamientos aliados","Formato de escalamiento"],bases:[L("Slack — #aliados-escalamientos","https://slack.com")]},
+      "Herramientas":{operativa:["Accesos: CRM, portal admin de aliados, panel de liquidaciones.","Nunca compartas pantalla del panel admin con el aliado."],material:["Guía del portal admin","Video: consulta de liquidaciones"],bases:[L("Portal admin aliados","https://ejemplo.com"),L("Panel liquidaciones","https://ejemplo.com")]},
+      "Políticas y SLAs":{operativa:["SLA primera respuesta aliados: 4h hábiles.","Prioridad alta: aliados con volumen top 100."],material:["SLAs oficiales de aliados","Política comercial vigente"],bases:[L("Notion — Políticas aliados","https://notion.so")]},
+      "Casos especiales":{operativa:["Aliados en proceso de desvinculación: solo informa el estado, escala a Comercial.","Sospecha de fraude de aliado: escala inmediato a Fraude, no confrontes."],material:["Protocolo aliado en desvinculación","Señales de alerta de fraude"],bases:[L("Protocolo casos especiales","https://ejemplo.com")]},
+      "FAQ":{operativa:["Revisa la FAQ del portal antes de escalar: 60% de los casos se resuelven ahí."],material:["FAQ interna aliados","Novedades del mes"],bases:[L("FAQ — Soporte aliados","https://ejemplo.com"),L("Training Center","https://ejemplo.com")]}
+    }
+  },
+  "marketplace":{
+    nombre:"MarketPlace",
+    noticias:[{tag:"blanco",titulo:"Nuevas categorías en MarketPlace",desc:"Se habilitaron nuevas categorías de producto. Consulta el catálogo actualizado en Bases y accesos.",fecha:"30 · Jul · 2026"},{tag:"teal",titulo:"Mejoras en tracking de envíos",desc:"El tracking ahora se actualiza en tiempo real. Cambia el guion de respuesta sobre estados de envío.",fecha:"22 · Jul · 2026"},{tag:"naranja",titulo:"Alerta: temporada alta",desc:"Se aproxima temporada de descuentos. Refuerza los tiempos de entrega extendidos en la comunicación.",fecha:"15 · Jul · 2026"}],
+    temas:{
+      "Proceso general":{operativa:["✏️ Edita: paso a paso general del equipo MarketPlace."],material:["✏️ Edita: manuales y guías del equipo."],bases:[L("Edita: link principal","https://ejemplo.com")]},
+      "Tipificaciones":{operativa:["✏️ Edita: reglas de tipificación."],material:["✏️ Edita: catálogo de tipificaciones."],bases:[L("Edita: matriz","https://ejemplo.com")]},
+      "Escalamientos":{operativa:["✏️ Edita: criterios y rutas de escalamiento."],material:["✏️ Edita: matriz de escalamientos."],bases:[L("Edita: canal de escalamiento","https://ejemplo.com")]},
+      "Herramientas":{operativa:["✏️ Edita: herramientas y accesos del equipo."],material:["✏️ Edita: guías de herramientas."],bases:[L("Edita: accesos","https://ejemplo.com")]},
+      "Políticas y SLAs":{operativa:["✏️ Edita: SLAs e indicadores."],material:["✏️ Edita: documentos de política."],bases:[L("Edita: políticas","https://ejemplo.com")]},
+      "Casos especiales":{operativa:["✏️ Edita: manejo de casos especiales."],material:["✏️ Edita: protocolos."],bases:[L("Edita: protocolo","https://ejemplo.com")]},
+      "FAQ":{operativa:["✏️ Edita: preguntas frecuentes del equipo."],material:["✏️ Edita: FAQ interna."],bases:[L("Edita: FAQ","https://ejemplo.com")]}
+    }
+  },
+  "pqrs":{
+    nombre:"PQRS",
+    noticias:[{tag:"naranja",titulo:"Vencimientos regulatorios",desc:"Recuerda: las PQRS ante entes de control tienen término legal de 15 días hábiles. Prioriza según semáforo.",fecha:"02 · Ago · 2026"},{tag:"blanco",titulo:"Nuevo formato de respuesta",desc:"Se actualizó la plantilla oficial de respuesta a PQRS. Usa únicamente la versión de agosto.",fecha:"27 · Jul · 2026"},{tag:"teal",titulo:"Reducción de reincidencias",desc:"Las reaperturas bajaron 12% gracias al nuevo control de calidad. Revisa los criterios en Documentación.",fecha:"19 · Jul · 2026"}],
+    temas:{
+      "Proceso general":{operativa:["✏️ Edita: flujo de radicación, análisis y respuesta de PQRS."],material:["✏️ Edita: manual PQRS."],bases:[L("Edita: sistema de radicación","https://ejemplo.com")]},
+      "Tipificaciones":{operativa:["✏️ Edita: petición / queja / reclamo / sugerencia."],material:["✏️ Edita: guía de clasificación."],bases:[L("Edita: matriz","https://ejemplo.com")]},
+      "Escalamientos":{operativa:["✏️ Edita: rutas hacia áreas responsables."],material:["✏️ Edita: matriz de escalamientos."],bases:[L("Edita: canal","https://ejemplo.com")]},
+      "Herramientas":{operativa:["✏️ Edita: herramientas del equipo PQRS."],material:["✏️ Edita: guías."],bases:[L("Edita: accesos","https://ejemplo.com")]},
+      "Políticas y SLAs":{operativa:["✏️ Edita: términos legales y SLAs internos."],material:["✏️ Edita: normativa aplicable."],bases:[L("Edita: políticas","https://ejemplo.com")]},
+      "Casos especiales":{operativa:["✏️ Edita: entes de control, tutelas, casos legales."],material:["✏️ Edita: protocolos."],bases:[L("Edita: protocolo","https://ejemplo.com")]},
+      "FAQ":{operativa:["✏️ Edita: preguntas frecuentes."],material:["✏️ Edita: FAQ interna."],bases:[L("Edita: FAQ","https://ejemplo.com")]}
+    }
+  },
+  "actualizacion-de-datos":{
+    nombre:"Actualización de datos",
+    noticias:[{tag:"blanco",titulo:"Nuevo flujo de validación biométrica",desc:"La actualización de datos sensibles ahora requiere validación biométrica. Revisa el paso a paso en Documentación.",fecha:"29 · Jul · 2026"},{tag:"teal",titulo:"Automatización de cambios de correo",desc:"Los cambios de correo simples ya son autogestionables por el cliente desde la app.",fecha:"20 · Jul · 2026"},{tag:"naranja",titulo:"Alerta de suplantación",desc:"Aumentaron intentos de suplantación en cambios de celular. Aplica el protocolo reforzado sin excepción.",fecha:"12 · Jul · 2026"}],
+    temas:{
+      "Proceso general":{operativa:["✏️ Edita: flujo general de actualización de datos."],material:["✏️ Edita: manual del proceso."],bases:[L("Edita: herramienta","https://ejemplo.com")]},
+      "Tipificaciones":{operativa:["✏️ Edita: tipos de actualización."],material:["✏️ Edita: catálogo."],bases:[L("Edita: matriz","https://ejemplo.com")]},
+      "Escalamientos":{operativa:["✏️ Edita: cuándo escalar a Fraude o Seguridad."],material:["✏️ Edita: matriz."],bases:[L("Edita: canal","https://ejemplo.com")]},
+      "Herramientas":{operativa:["✏️ Edita: herramientas de validación."],material:["✏️ Edita: guías."],bases:[L("Edita: accesos","https://ejemplo.com")]},
+      "Políticas y SLAs":{operativa:["✏️ Edita: política de datos personales y SLAs."],material:["✏️ Edita: habeas data."],bases:[L("Edita: políticas","https://ejemplo.com")]},
+      "Casos especiales":{operativa:["✏️ Edita: fallecidos, suplantación, menores."],material:["✏️ Edita: protocolos."],bases:[L("Edita: protocolo","https://ejemplo.com")]},
+      "FAQ":{operativa:["✏️ Edita: preguntas frecuentes."],material:["✏️ Edita: FAQ interna."],bases:[L("Edita: FAQ","https://ejemplo.com")]}
+    }
+  },
+  "collections":{
+    nombre:"Collections",
+    noticias:[{tag:"blanco",titulo:"Nueva campaña de acuerdos de pago",desc:"Inició la campaña de agosto con condiciones especiales. Consulta los rangos autorizados en Documentación.",fecha:"01 · Ago · 2026"},{tag:"teal",titulo:"Mejora en contactabilidad",desc:"El nuevo horario de marcación aumentó la contactabilidad 8%. Respeta las franjas permitidas.",fecha:"24 · Jul · 2026"},{tag:"naranja",titulo:"Recordatorio normativo",desc:"Cumple estrictamente los horarios y frecuencias de contacto definidos por la regulación de cobranza.",fecha:"16 · Jul · 2026"}],
+    temas:{
+      "Proceso general":{operativa:["✏️ Edita: flujo de gestión de cobranza."],material:["✏️ Edita: manual de collections."],bases:[L("Edita: herramienta de cobranza","https://ejemplo.com")]},
+      "Tipificaciones":{operativa:["✏️ Edita: resultados de gestión."],material:["✏️ Edita: catálogo."],bases:[L("Edita: matriz","https://ejemplo.com")]},
+      "Escalamientos":{operativa:["✏️ Edita: casos jurídicos, disputas."],material:["✏️ Edita: matriz."],bases:[L("Edita: canal","https://ejemplo.com")]},
+      "Herramientas":{operativa:["✏️ Edita: marcador, CRM de cobranza."],material:["✏️ Edita: guías."],bases:[L("Edita: accesos","https://ejemplo.com")]},
+      "Políticas y SLAs":{operativa:["✏️ Edita: política de cobranza y normativa."],material:["✏️ Edita: documentos."],bases:[L("Edita: políticas","https://ejemplo.com")]},
+      "Casos especiales":{operativa:["✏️ Edita: acuerdos especiales, condonaciones."],material:["✏️ Edita: protocolos."],bases:[L("Edita: protocolo","https://ejemplo.com")]},
+      "FAQ":{operativa:["✏️ Edita: preguntas frecuentes."],material:["✏️ Edita: FAQ interna."],bases:[L("Edita: FAQ","https://ejemplo.com")]}
+    }
+  },
+  "fraude":{
+    nombre:"Fraude",
+    noticias:[{tag:"naranja",titulo:"Nueva modalidad detectada",desc:"Se identificó una nueva modalidad de suplantación por llamada. Revisa las señales de alerta en Material.",fecha:"31 · Jul · 2026"},{tag:"blanco",titulo:"Actualización del protocolo de bloqueo",desc:"El bloqueo preventivo de cuentas ahora es inmediato ante 2 señales de alerta confirmadas.",fecha:"23 · Jul · 2026"},{tag:"teal",titulo:"Resultados de prevención",desc:"El equipo evitó fraudes por $120M en julio. Sigue reportando patrones sospechosos por el canal oficial.",fecha:"17 · Jul · 2026"}],
+    temas:{
+      "Proceso general":{operativa:["✏️ Edita: flujo de análisis y gestión de fraude."],material:["✏️ Edita: manual antifraude."],bases:[L("Edita: herramienta","https://ejemplo.com")]},
+      "Tipificaciones":{operativa:["✏️ Edita: modalidades de fraude."],material:["✏️ Edita: catálogo."],bases:[L("Edita: matriz","https://ejemplo.com")]},
+      "Escalamientos":{operativa:["✏️ Edita: rutas a Seguridad, Legal, autoridades."],material:["✏️ Edita: matriz."],bases:[L("Edita: canal","https://ejemplo.com")]},
+      "Herramientas":{operativa:["✏️ Edita: herramientas de análisis y bloqueo."],material:["✏️ Edita: guías."],bases:[L("Edita: accesos","https://ejemplo.com")]},
+      "Políticas y SLAs":{operativa:["✏️ Edita: política antifraude y tiempos."],material:["✏️ Edita: documentos."],bases:[L("Edita: políticas","https://ejemplo.com")]},
+      "Casos especiales":{operativa:["✏️ Edita: fraude interno, montos altos."],material:["✏️ Edita: protocolos."],bases:[L("Edita: protocolo","https://ejemplo.com")]},
+      "FAQ":{operativa:["✏️ Edita: preguntas frecuentes."],material:["✏️ Edita: FAQ interna."],bases:[L("Edita: FAQ","https://ejemplo.com")]}
+    }
+  }
+};
+/* ================== FIN ZONA EDITABLE ================== */
+
+let equipoActual = null, temaActual = null, slideIdx = 0, autoTimer = null;
+const $ = id => document.getElementById(id);
+
+/* ---- Sidebar: equipos + dropdowns ---- */
+function renderSidebar(){
+  const cont = $("teams");
+  cont.innerHTML = "";
+  Object.entries(DATA).forEach(([key, eq])=>{
+    const div = document.createElement("div");
+    div.className = "team";
+    div.dataset.key = key;
+    const opts = Object.keys(eq.temas).map(t=>
+      `<button class="opt" data-team="${key}" data-tema="${t}">${t}</button>`).join("");
+    div.innerHTML = `
+      <button class="team-btn">${eq.nombre}<span class="chev">▼</span></button>
+      <div class="team-options">${opts}</div>`;
+    cont.appendChild(div);
+  });
+
+  cont.querySelectorAll(".team-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const team = btn.parentElement;
+      const wasOpen = team.classList.contains("open");
+      cont.querySelectorAll(".team").forEach(t=>t.classList.remove("open"));
+      if(!wasOpen){
+        team.classList.add("open");
+        seleccionarEquipo(team.dataset.key);
+      }
+    });
+  });
+
+  cont.querySelectorAll(".opt").forEach(opt=>{
+    opt.addEventListener("click", ()=> seleccionar(opt.dataset.team, opt.dataset.tema));
+  });
+}
+
+/* ---- Selección ---- */
+function seleccionarEquipo(key){
+  equipoActual = key;
+  temaActual = Object.keys(DATA[key].temas)[0];
+  refrescar();
+}
+function seleccionar(key, tema){
+  equipoActual = key; temaActual = tema;
+  const cont = $("teams");
+  cont.querySelectorAll(".team").forEach(t=>t.classList.toggle("open", t.dataset.key===key));
+  refrescar();
+}
+function refrescar(){
+  document.querySelectorAll(".opt").forEach(o=>
+    o.classList.toggle("active", o.dataset.team===equipoActual && o.dataset.tema===temaActual));
+  const eq = DATA[equipoActual];
+  const pill = $("selectionPill");
+  pill.innerHTML = `<span class="p-dot"></span>${eq.nombre} · <b>${temaActual}</b>`;
+  pill.style.animation="none"; void pill.offsetWidth; pill.style.animation="";
+  renderNoticias(); renderCasillas();
+}
+
+/* ---- Galería de noticias ---- */
+/* Convierte links de Google Drive en URLs de imagen embebibles */
+function urlImagen(u){
+  if(!u) return "";
+  const m = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([\w-]+)/);
+  return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1600` : u;
+}
+function renderNoticias(){
+  const eq = DATA[equipoActual];
+  slideIdx = 0;
+  $("slides").innerHTML = eq.noticias.map((n,i)=>`
+    <div class="slide ${i===0?"active":""} ${n.imagen?"with-img":""}">
+      ${n.imagen?`<img class="slide-img" src="${urlImagen(n.imagen)}" alt="" onerror="this.remove()">`:""}
+      <span class="tag ${n.tag}">● ${eq.nombre}</span>
+      <h2>${n.titulo}</h2>
+      <p>${n.desc}</p>
+      <div class="fecha">${n.fecha}</div>
+    </div>`).join("");
+  $("dots").innerHTML = eq.noticias.map((_,i)=>
+    `<button class="dot ${i===0?"active":""}" data-i="${i}" aria-label="Noticia ${i+1}"></button>`).join("");
+  $("dots").querySelectorAll(".dot").forEach(d=>
+    d.addEventListener("click", ()=>{irSlide(+d.dataset.i);reiniciarAuto();}));
+  reiniciarAuto();
+}
+function irSlide(i){
+  const slides = document.querySelectorAll(".slide");
+  if(!slides.length) return;
+  const prev = slideIdx;
+  slideIdx = (i + slides.length) % slides.length;
+  slides.forEach((s,j)=>{
+    s.classList.remove("exit-left");
+    if(j===prev && prev!==slideIdx) s.classList.add("exit-left");
+    s.classList.toggle("active", j===slideIdx);
+  });
+  document.querySelectorAll(".dot").forEach((d,j)=>d.classList.toggle("active", j===slideIdx));
+}
+function reiniciarAuto(){
+  clearInterval(autoTimer);
+  const bar = $("progress");
+  bar.classList.remove("run"); void bar.offsetWidth; bar.classList.add("run");
+  autoTimer = setInterval(()=>{
+    irSlide(slideIdx+1);
+    bar.classList.remove("run"); void bar.offsetWidth; bar.classList.add("run");
+  }, 6000);
+}
+$("prevBtn").addEventListener("click", ()=>{irSlide(slideIdx-1);reiniciarAuto();});
+$("nextBtn").addEventListener("click", ()=>{irSlide(slideIdx+1);reiniciarAuto();});
+document.addEventListener("keydown", e=>{
+  if(e.key==="ArrowLeft"){irSlide(slideIdx-1);reiniciarAuto();}
+  if(e.key==="ArrowRight"){irSlide(slideIdx+1);reiniciarAuto();}
+});
+
+/* ---- Casillas Documentación / Material / Bases ---- */
+function renderCasillas(){
+  const t = DATA[equipoActual].temas[temaActual];
+  const item = (x,i) => (typeof x === "object" && x.d)
+    ? `<li class="colapsable" style="animation-delay:${i*70}ms"><button class="item-titulo">${x.t}<span class="ichev">▾</span></button><div class="item-detalle">${x.d}</div></li>`
+    : `<li style="animation-delay:${i*70}ms">${x}</li>`;
+  const li = arr => arr && arr.length
+    ? arr.map(item).join("")
+    : `<li class="empty" style="animation-delay:0ms">Sin contenido aún</li>`;
+  $("colDocumentación").innerHTML = li(t.operativa);
+  $("colMaterial").innerHTML  = li(t.material);
+  ["colDocumentación","colMaterial"].forEach(id=>{
+    $(id).querySelectorAll(".item-titulo").forEach(b=>
+      b.addEventListener("click", ()=>b.closest("li").classList.toggle("abierto")));
+  });
+  /* Cada link muestra el logo real del servicio (favicon del dominio).
+     Si el logo no carga, se muestra la letra inicial. */
+  const favicon = b => {
+    let dominio = "";
+    try { dominio = new URL(b.u).hostname; } catch(e){}
+    const letra = (b.t||"?").replace(/[^a-zA-ZÀ-ÿ0-9]/g,"").charAt(0).toUpperCase() || "•";
+    return dominio
+      ? `<img class="fav" data-letra="${letra}" src="https://www.google.com/s2/favicons?domain=${dominio}&sz=64" alt="">`
+      : `<span class="fav-letter">${letra}</span>`;
+  };
+  $("colBases").innerHTML = t.bases && t.bases.length
+    ? t.bases.map((b,i)=>`<li style="animation-delay:${i*70}ms"><a href="${b.u}" target="_blank" rel="noopener">${favicon(b)}${b.t}<span class="arrow">→</span></a></li>`).join("")
+    : `<li class="empty" style="animation-delay:0ms">Sin links aún</li>`;
+  $("colBases").querySelectorAll("img.fav").forEach(img=>{
+    img.addEventListener("error", ()=>{
+      const s = document.createElement("span");
+      s.className = "fav-letter";
+      s.textContent = img.dataset.letra || "•";
+      img.replaceWith(s);
+    });
+  });
+}
+
+/* ---- Buscador ---- */
+$("search").addEventListener("input", e=>{
+  const q = e.target.value.trim().toLowerCase();
+  const drop = $("searchDrop");
+  if(q.length < 2){ drop.style.display="none"; return; }
+  const res = [];
+  Object.entries(DATA).forEach(([key,eq])=>{
+    if(eq.nombre.toLowerCase().includes(q)) res.push({key, tema:Object.keys(eq.temas)[0], label:`<span class="sd-team">${eq.nombre}</span>`});
+    Object.keys(eq.temas).forEach(t=>{
+      if(t.toLowerCase().includes(q)) res.push({key, tema:t, label:`<span class="sd-team">${eq.nombre}</span>&nbsp;› ${t}`});
+    });
+  });
+  if(!res.length){ drop.innerHTML=`<button disabled>Sin resultados…</button>`; drop.style.display="block"; return; }
+  drop.innerHTML = res.slice(0,8).map((r,i)=>`<button data-i="${i}"><span class="sd-dot"></span>${r.label}</button>`).join("");
+  drop.querySelectorAll("button[data-i]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const r = res[+b.dataset.i];
+      seleccionar(r.key, r.tema);
+      drop.style.display="none"; $("search").value="";
+    });
+  });
+  drop.style.display="block";
+});
+document.addEventListener("click", e=>{
+  if(!e.target.closest(".searchwrap")) $("searchDrop").style.display="none";
+});
+
+/* ============================================================
+   CARGA DESDE GOOGLE SHEETS
+   Lee las pestañas Contenido y Noticias, reconstruye DATA y
+   re-renderiza. Si falla, se mantiene el contenido embebido.
+   ============================================================ */
+function parseCSV(texto){
+  const filas=[]; let fila=[], campo="", enComillas=false;
+  for(let i=0;i<texto.length;i++){
+    const c=texto[i];
+    if(enComillas){
+      if(c==='"'){ if(texto[i+1]==='"'){campo+='"';i++;} else enComillas=false; }
+      else campo+=c;
+    } else {
+      if(c==='"') enComillas=true;
+      else if(c===','){ fila.push(campo); campo=""; }
+      else if(c==='\n'||c==='\r'){ if(c==='\r'&&texto[i+1]==='\n')i++; fila.push(campo); campo=""; if(fila.some(x=>x!=="")) filas.push(fila); fila=[]; }
+      else campo+=c;
+    }
+  }
+  if(campo!==""||fila.length){ fila.push(campo); if(fila.some(x=>x!=="")) filas.push(fila); }
+  return filas;
+}
+const slug = s => s.toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+
+function construirDATA(contFilas, notFilas){
+  const nuevo = {};
+  contFilas.slice(1).forEach(f=>{
+    const [equipo, tema, tarjeta, texto, link, detalle] = f.map(x=>(x||"").trim());
+    if(!equipo||!tema||!texto) return;
+    const k = slug(equipo);
+    if(!nuevo[k]) nuevo[k] = {nombre:equipo, noticias:[], temas:{}};
+    if(!nuevo[k].temas[tema]) nuevo[k].temas[tema] = {operativa:[], material:[], bases:[]};
+    const t = (tarjeta||"").toLowerCase();
+    const it = detalle ? {t:texto, d:detalle} : texto;
+    /* Acepta el nombre viejo de la tarjeta (Operativa/Bases y links) y el
+       nuevo (Documentación/Bases y accesos), para que no importe cuál
+       escribas en la columna "Tarjeta" del Sheet. */
+    if(t.startsWith("oper") || t.startsWith("docu")) nuevo[k].temas[tema].operativa.push(it);
+    else if(t.startsWith("mat")) nuevo[k].temas[tema].material.push(it);
+    else nuevo[k].temas[tema].bases.push({t:texto, u:link||"#"});
+  });
+  notFilas.slice(1).forEach(f=>{
+    const [equipo, etiqueta, titulo, desc, fecha, imagen] = f.map(x=>(x||"").trim());
+    if(!equipo||!titulo) return;
+    const k = slug(equipo);
+    if(!nuevo[k]) return;
+    const tag = ["teal","naranja","blanco"].includes((etiqueta||"").toLowerCase()) ? etiqueta.toLowerCase() : "blanco";
+    nuevo[k].noticias.push({tag, titulo, desc, fecha, imagen});
+  });
+  return nuevo;
+}
+
+async function cargarDesdeSheets(){
+  if(!CONFIG.SHEET_ID) return false;
+  const url = tab => `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
+  try{
+    const [c, n] = await Promise.all([
+      fetch(url(CONFIG.TAB_CONTENIDO)).then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); }),
+      fetch(url(CONFIG.TAB_NOTICIAS)).then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
+    ]);
+    const nuevo = construirDATA(parseCSV(c), parseCSV(n));
+    if(!Object.keys(nuevo).length) return false;
+    DATA = nuevo;
+    return true;
+  }catch(e){
+    console.warn("No se pudo leer Google Sheets, se usa el contenido local:", e);
+    return false;
+  }
+}
+
+/* ---- Init ---- */
+renderSidebar();
+{
+  const k0 = Object.keys(DATA)[0];
+  seleccionar(k0, Object.keys(DATA[k0].temas)[0]);
+}
+cargarDesdeSheets().then(ok=>{
+  if(ok){
+    renderSidebar();
+    const k = Object.keys(DATA)[0];
+    seleccionar(k, Object.keys(DATA[k].temas)[0]);
+    $("fuente").textContent = "Contenido conectado a Google Sheets";
+  }
+});
+</script>
+</body>
+</html>
